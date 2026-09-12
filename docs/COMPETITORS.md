@@ -1,33 +1,43 @@
 # Competitive landscape
 
-This project was not the first Codex quota monitor. Several strong open-source tools already cover quota visibility. The goal here is therefore **not** to build another menu-bar widget.
+This project is **not** the first Codex quota monitor. A competitor scan performed before publication found several mature alternatives, including one (`CodexMeter`) with very high functional overlap. The justification for keeping this repository is therefore deliberately narrow: a headless, read-only, reset-safe audit trail with bounded storage and conservative attribution semantics.
 
 ## Direct and adjacent alternatives
 
 | Project | Main strength | Overlap with this project | Key difference |
 | --- | --- | --- | --- |
-| [CodexMeter](https://github.com/raycalrui/CodexMeter) | Native macOS menu-bar app with quota history, token activity, banked resets, notifications, CSV export | Very high: uses `codex app-server`, `account/rateLimits/read`, update notifications, local history | Better interactive UI. This project is intentionally headless and emphasizes conservative interval boundaries, redacted raw evidence, fixed storage admission rules, and no UI/update framework. |
-| [CodexBar](https://github.com/steipete/CodexBar) | Mature multi-provider menu-bar usage tracker | High at current-quota visibility | Much broader provider support and UI. This project uses only the local Codex app-server and avoids browser-cookie/provider-account aggregation. |
-| [caut / coding_agent_usage_tracker](https://github.com/Dicklesworthstone/coding_agent_usage_tracker) | Cross-platform CLI for many coding-agent providers; JSON/Markdown robot output | Medium: quota/credit reads and automation-friendly output | Designed for on-demand multi-provider inspection. This project is a persistent longitudinal recorder with change detection, hourly anchors, reset-safe segmentation and retention controls. |
-| [CodexUsageBar](https://codexusagebar.com/) | Minimal macOS menu-bar quota display and notifications | Medium | Focuses on glanceable display, not a durable forensic history. |
-| [codex-monitor](https://github.com/manuelsh/codex-monitor) | Local dashboard combining quota, task tokens and estimated usage | Medium | Focuses on task-level dashboarding/estimation. This logger intentionally refuses to infer which task/person/model caused account-level quota changes. |
-| [codex-hud](https://github.com/haenara-shin/codex-hud) | Statusline quota display across multiple Codex storage/protocol eras | Medium | Optimized for interactive session visibility; this project is an independent background recorder. |
+| [CodexMeter](https://github.com/raycalrui/CodexMeter) | Native macOS menu-bar app; Codex App Server; 5-hour/weekly quota, banked resets, token activity, local history, CSV export, launch at login | **Very high**. It already records quota history as changes plus periodic anchors and reads `account/rateLimits/read` / optional `account/usage/read`. | Prefer CodexMeter if an interactive macOS UI is desired. This project stays headless and emphasizes strict RPC allowlisting, explicit reset/window segmentation, redacted short-lived raw evidence, and a hard managed-storage admission policy. |
+| [CodexBar](https://github.com/steipete/CodexBar) | Mature multi-provider usage tracker with macOS/Linux UI and CLI, many providers, usage/spend views | High for current-quota visibility; broader than this project | Better choice for multi-provider monitoring. This project intentionally avoids browser-cookie/provider aggregation and only records Codex account-level history through the local App Server. |
+| [caut / coding_agent_usage_tracker](https://github.com/Dicklesworthstone/coding_agent_usage_tracker) | Cross-platform Rust CLI for many coding-agent providers with human/JSON/Markdown output | Medium: quota/credit reads and automation-friendly output | Designed mainly for on-demand multi-provider inspection. This project is a persistent longitudinal recorder with change detection, hourly anchors, reset-safe segmentation and retention controls. |
+| [codex-hud](https://github.com/fwyc0573/codex-hud) | Interactive Codex/tmux HUD for model, context, tokens, project/session and agent activity | Adjacent | Optimized for active-session observability. This project runs independently in the background and records account-level quota history even when work happens elsewhere. |
+| `CodexUsageBar` family | Several small macOS menu-bar projects exist under this name on GitHub | Medium for glanceable quota display | These generally target a visible status bar rather than a conservative evidence/audit log. Because there are multiple unrelated repositories with the same name, this document does not treat one fork as canonical. |
 
-## Why keep this project?
+## What the scan changed
 
-The useful niche is a **small, auditable measurement appliance**:
+The competitor scan materially narrowed the product scope. In particular, **we should not spend effort cloning CodexMeter/CodexBar UI features**. If the user's goal changes to a menu-bar chart, notifications, or broad provider aggregation, adopting one of those projects is preferable to extending this repository.
+
+The remaining niche is a **small measurement appliance**:
 
 - no model turns and a fixed read-only RPC allowlist;
 - persistent account-level history even when work happens in other Codex clients;
-- change-triggered samples plus hourly anchors;
+- change-triggered samples plus hourly anchors, with a low-rate poll as cross-client fallback;
 - conservative reset/window/account boundary handling instead of filling gaps with estimates;
 - redacted raw evidence retained briefly for debugging;
 - long-term normalized CSV;
 - hard 250 MB managed-storage ceiling and raw-first eviction;
-- no automatic per-project, per-person or per-model attribution.
+- no automatic per-project, per-person or per-model attribution;
+- CLI/LaunchAgent operation with no always-visible UI requirement.
 
-If one of the alternatives already satisfies these requirements, using it is preferable to maintaining another tool. Future development here should stay focused on measurement integrity and low-maintenance background operation rather than duplicating dashboards.
+If an alternative already satisfies these requirements on the target machine, using it is preferable to maintaining another tool.
 
 ## Project-start rule
 
-Before adding a substantial new feature or spinning up a related tool, first search current open-source and commercial alternatives, document what already exists, and state the smallest unmet requirement that justifies new code.
+For this repository, and as a general development habit for future greenfield work:
+
+1. Search current open-source and commercial alternatives first.
+2. Identify which existing project is closest to the actual need.
+3. State the smallest unmet requirement (the `gap`) that would justify new code.
+4. Prefer adopting/extending an existing tool when the gap is small.
+5. Only start a new implementation when the gap is material, and keep the new scope limited to that gap.
+
+This check should happen **before architecture/design work**, so implementation effort is not spent rediscovering an existing product.
