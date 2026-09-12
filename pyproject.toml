@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=65"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "codex-quota-logger"
+version = "0.1.0"
+description = "Local, read-only Codex account quota history without model turns"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.scripts]
+codex-quota-logger = "codex_quota_logger.cli:main"
+
+[tool.setuptools]
+packages = ["codex_quota_logger"]
