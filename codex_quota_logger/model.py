@@ -189,51 +189,40 @@ def normalize(projected, context):
     resets = projected["rateLimitResetCredits"]
     return {"context": copy.deepcopy(context), "buckets": result,
             "ordinary_usage_allowed": projected["ordinaryUsageAllowed"],
-            "reset_summary": None if resets is None else {"availableCount": resets.get("availableCount")}}
+            "reset_summary": resets}
 
 
 def project_usage(result):
-    if not isinstance(result, dict):
+    if not isinstance(result, dict) or "summary" not in result:
         raise ShapeError("invalid_usage_response")
     summary = result.get("summary")
     if summary is not None and not isinstance(summary, dict):
         raise ShapeError("invalid_usage_summary")
-    out = {"summary": {}, "dailyUsageBuckets": None}
-    for k in ("lifetimeTokens", "peakDailyTokens", "longestRunningTurnSec", "currentStreakDays", "longestStreakDays"):
-        v = number((summary or {}).get(k), integer=True, nonnegative=True)
-        if v is not None:
-            out["summary"][k] = v
-    buckets = result.get("dailyUsageBuckets")
-    if buckets is None:
-        return out
-    if not isinstance(buckets, list) or len(buckets) > 5000:
-        raise ShapeError("invalid_daily_usage")
-    rows = []
-    for row in buckets:
-        if not isinstance(row, dict):
-            raise ShapeError("invalid_daily_row")
-        day = row.get("startDate")
-        tokens = number(row.get("tokens"), integer=True, nonnegative=True)
-        if not isinstance(day, str) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", day) or tokens is None:
-            raise ShapeError("invalid_daily_fields")
-        try:
-            datetime.strptime(day, "%Y-%m-%d")
-        except ValueError:
-            raise ShapeError("invalid_daily_date") from None
-        rows.append({"startDate": day, "tokens": tokens})
-    out["daily]sageBuckets"] = rows
-    return out
-
-
-def semantic_digest(normalized):
-    return hashlib.sha256(json.dumps(normalized, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode()).hexdigest()
+    keys = ("lifetimeTokens", "peakDailyTokens", "longestRunningTurnSec", "currentStreakDays", "longestStreakDays")
+    daily = result.get("dailyUsageBuckets")
+    if daily is not None and (not isinstance(daily, list) or len(daily) > 5000):
+        raise ShapeError("invalid_usage_buckets")
+    rows = None
+    if daily is not None:
+        rows = []
+        for row in daily:
+            if not isinstance(row, dict):
+                raise ShapeError("invalid_daily_row")
+            day = row.get("startDate")
+            try:
+                datetime.strptime(day, "%Y-%m-%d")
+            except (TypeError, ValueError):
+                raise ShapeError("invalid_usage_date") from None
+            rows.append({"startDate": day, "tokens": number(row.get("tokens"), integer=True, nonnegative=True)})
+    return {"summary": None if summary is None else {k: number(summary.get(k), integer=True, nonnegative=True) for k in keys},
+            "dailyUsageBuckets": rows}
 
 
 COLUMNS = ["schema_version", "sample_id", "timestamp_utc", "timestamp_local", "timezone",
-           "event_type", "trigger", "codex_version", "account_fingerprint", "auth_mode", "plan_type",
-           "limit_id", "normal_model_slug", "bucket_present", "ordinary_usage_allowed"]
-for w in ("primary", "secondary"):
-    COLUMNS += [w + s for s in ("_used_percent", "_remaining_percent", "_window_minutes", "_resets_at", "_interval_id")]
+           "event_type", "trigger", "codex_version", "account_fingerprint", "auth_mode",
+           "plan_type", "limit_id", "normal_model_slug", "bucket_present", "ordinary_usage_allowed"]
+for _w in ("primary", "secondary"):
+    COLUMNS += [f"{_w}_{x}" for x in ("used_percent", "remaining_percent", "window_minutes", "resets_at", "interval_id")]
 COLUMNS += ["measurement_interval_id", "rate_limit_reached_type", "credits_has_credits", "credits_unlimited",
             "credits_balance", "spend_control_reached", "individual_limit", "individual_used",
             "individual_remaining_percent", "individual_resets_at", "earned_reset_count", "notes"]
