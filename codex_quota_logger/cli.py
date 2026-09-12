@@ -84,7 +84,7 @@ def main(argv=None):
         elif a.command == "run":
             return Daemon(cfg).run()
         elif a.command == "status":
-            out = status(cfg)
+            out = status(cfg)  # Reads saved files only. Never starts Codex.
         elif a.command == "housekeeping":
             with Store(cfg.data_dir, cfg.cap_bytes, cfg.retention_days) as s:
                 out = s.housekeeping(datetime.now(timezone.utc))
@@ -99,6 +99,7 @@ def main(argv=None):
         print(json.dumps(out, indent=2, ensure_ascii=True, allow_nan=False))
         return 0
     except (ProtocolError, ShapeError, StorageError) as e:
+        # These exception messages are application-defined codes, not payloads.
         print(json.dumps({"result": "BLOCKED", "code": str(e), "model_turn_methods_sent_by_design": 0}), file=sys.stderr)
         return 2
     except (OSError, ValueError, ZoneInfoNotFoundError, subprocess.TimeoutExpired):

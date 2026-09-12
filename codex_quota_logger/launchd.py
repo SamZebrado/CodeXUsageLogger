@@ -91,5 +91,5 @@ def action(name):
         if _ctl(["bootstrap", domain, str(target)]).returncode:
             raise StorageError("launchagent_bootstrap_failed")
     if name == "uninstall" and present:
-        target.unlink()
+        target.unlink()  # History and source checkout intentionally untouched.
     return {"action": name, "loaded": loaded(), "history_deleted": False}
