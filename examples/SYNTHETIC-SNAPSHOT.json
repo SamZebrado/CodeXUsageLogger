@@ -1,0 +1,66 @@
+{
+  "result": "CODEX_QUOTA_LOGGER_DRY_RUN_PASS",
+  "codex_version": "0.0.0-synthetic",
+  "schema": {
+    "status": "inspected",
+    "methods": [
+      "account/rateLimits/read",
+      "account/read",
+      "account/usage/read",
+      "initialize"
+    ],
+    "files": 1,
+    "bytes": 246
+  },
+  "outgoing_methods": {
+    "initialize": 1,
+    "initialized": 1,
+    "account/read": 1,
+    "account/rateLimits/read": 1
+  },
+  "model_turn_methods_sent": 0,
+  "history_written": false,
+  "launchagent_installed": false,
+  "rows": [
+    {
+      "schema_version": 1,
+      "sample_id": "2af5f9a91f2b4254b13eb2f91f245ed2",
+      "timestamp_utc": "2026-09-12T05:26:28+00:00",
+      "timestamp_local": "2026-09-12T13:26:28+08:00",
+      "timezone": "Asia/Shanghai",
+      "trigger": "dry_run",
+      "codex_version": "0.0.0-synthetic",
+      "account_fingerprint": null,
+      "auth_mode": "chatgpt",
+      "plan_type": "pro",
+      "limit_id": "codex",
+      "normal_model_slug": null,
+      "bucket_present": true,
+      "ordinary_usage_allowed": true,
+      "primary_interval_id": "cac8c0fe6be6479eb1fb8aee8fb3e39e",
+      "primary_used_percent": 10,
+      "primary_remaining_percent": 90,
+      "primary_window_minutes": 300,
+      "primary_resets_at": "2026-09-21T14:13:20+00:00",
+      "secondary_interval_id": "32016b26a4b2412bb8f729ec0b353653",
+      "secondary_used_percent": 25,
+      "secondary_remaining_percent": 75,
+      "secondary_window_minutes": 10080,
+      "secondary_resets_at": "2026-09-25T01:33:20+00:00",
+      "measurement_interval_id": "ad29c483f1c56715b73df608",
+      "rate_limit_reached_type": null,
+      "credits_has_credits": false,
+      "credits_unlimited": false,
+      "credits_balance": "0",
+      "spend_control_reached": null,
+      "individual_limit": null,
+      "individual_used": null,
+      "individual_remaining_percent": null,
+      "individual_resets_at": null,
+      "earned_reset_count": 2,
+      "event_type": "startup",
+      "notes": "account_identity_unavailable"
+    }
+  ],
+  "compatibility": "live_account_read_verified; schema status reported separately"
+}
